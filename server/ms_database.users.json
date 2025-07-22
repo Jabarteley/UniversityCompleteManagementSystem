@@ -1,0 +1,36 @@
+[{
+  "_id": {
+    "$oid": "687cab39eef89662fb64ac13"
+  },
+  "username": "adminuser",
+  "email": "admin@example.com",
+  "password": "$2a$12$6AlaeatrKdC/dJ6eiGamsOP1LYblxVka4GelylewjeAB..PJUt/LO",
+  "role": "admin",
+  "profile": {
+    "firstName": "Admin",
+    "lastName": "User"
+  },
+  "emailVerified": false,
+  "isActive": true,
+  "lastLogin": {
+    "$date": "2025-07-22T12:06:08.395Z"
+  },
+  "loginAttempts": 0,
+  "permissions": {
+    "canApproveLeave": false,
+    "canBackupData": false,
+    "canGenerateReports": false,
+    "canManageFiles": false,
+    "canManageStaff": false,
+    "canManageStudents": false,
+    "canManageSystem": false,
+    "canManageUsers": false,
+    "canPromoteStaff": false,
+    "canViewReports": false
+  },
+  "updatedAt": {
+    "$date": "2025-07-22T12:06:08.411Z"
+  }
+}
+ 
+]
