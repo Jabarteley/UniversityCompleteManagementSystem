@@ -8,7 +8,16 @@ const router = express.Router();
 // Get all hostel allocations
 router.get('/', auth, authorize('admin', 'staff-affairs'), async (req, res) => {
   try {
-    const allocations = await HostelAllocation.find().populate('student').populate('hostel');
+    const allocations = await HostelAllocation.find()
+      .populate({
+        path: 'student',
+        populate: {
+          path: 'userId',
+          model: 'User',
+          select: 'profile.firstName profile.lastName registrationNumber' // Select only necessary fields
+        }
+      })
+      .populate('hostel');
     res.json({ success: true, allocations });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -18,7 +27,13 @@ router.get('/', auth, authorize('admin', 'staff-affairs'), async (req, res) => {
 // Create hostel allocation
 router.post('/', auth, authorize('admin', 'staff-affairs'), async (req, res) => {
   try {
-    const newAllocation = await HostelAllocation.create(req.body);
+    const { studentId, hostelId, roomNumber } = req.body;
+
+    const newAllocation = await HostelAllocation.create({
+      student: studentId,
+      hostel: hostelId,
+      roomNumber,
+    });
     res.status(201).json({ success: true, allocation: newAllocation });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

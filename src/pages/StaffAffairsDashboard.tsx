@@ -11,28 +11,75 @@ import {
   Globe,
   LogOut,
   School,
-  Search
+  Search,
+  PlusCircle
 } from 'lucide-react';
 import { hostelAllocationAPI } from '../api/hostelAllocation';
+import { hostelAPI } from '../api/hostel';
 import { admissionsAPI } from '../api/admissions';
 import { externalIntegrationAPI } from '../api/externalIntegration';
 import { studentResultsAPI } from '../api/studentResults';
 import { studentsAPI } from '../api/students';
+import { reportsAPI } from '../api/reports';
 import toast from 'react-hot-toast';
 
 const StaffAffairsDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('overview');
   const [registrationNumber, setRegistrationNumber] = useState('');
+  const [showHostelAllocationForm, setShowHostelAllocationForm] = useState(false);
+  const [newAllocationData, setNewAllocationData] = useState({
+    studentId: '',
+    hostelId: '',
+    roomNumber: '',
+  });
+  const [newResultData, setNewResultData] = useState({
+    studentId: '',
+    courseCode: '',
+    courseName: '',
+    creditUnits: '',
+    grade: '',
+    gradePoint: '',
+    semester: '',
+    year: '',
+  });
+  const [showHostelManagementForm, setShowHostelManagementForm] = useState(false);
+  const [newHostelData, setNewHostelData] = useState({
+    name: '',
+    totalRooms: '',
+  });
+  const [selectedStudentForReport, setSelectedStudentForReport] = useState('');
+  const [reportType, setReportType] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const queryClient = useQueryClient();
 
   // Fetch data
-  const { data: hostelData } = useQuery('hostel-allocations', () => hostelAllocationAPI.getAll({ limit: 50 }), {
+  const { data: hostelData } = useQuery('hostel-allocations', () => hostelAllocationAPI.getAll(), {
     onError: () => toast.error('Failed to load hostel allocations')
   });
-  const { data: studentsData } = useQuery('students', () => studentsAPI.getAll({ limit: 100 }), {
+  const { data: hostelsList } = useQuery('hostels-list', () => hostelAPI.getAll(), {
+    onError: () => toast.error('Failed to load hostels list')
+  });
+  const { data: studentsData } = useQuery('students', () => studentsAPI.getAll(), {
     onError: () => toast.error('Failed to load students data')
   });
+
+  const createHostelAllocationMutation = useMutation(hostelAllocationAPI.create, {
+    onSuccess: () => {
+      toast.success('Hostel allocation created successfully');
+      queryClient.invalidateQueries('hostel-allocations');
+      setShowHostelAllocationForm(false);
+      setNewAllocationData({
+        studentId: '',
+        hostelId: '',
+        roomNumber: '',
+        bedNumber: '',
+      });
+    },
+    onError: () => toast.error('Failed to create hostel allocation')
+  });
+  
   const { data: uploadHistory } = useQuery('upload-history', externalIntegrationAPI.getUploadHistory, {
     onError: () => toast.error('Failed to load upload history')
   });
@@ -65,7 +112,69 @@ const StaffAffairsDashboard: React.FC = () => {
     onError: () => toast.error('Failed to upload to JAMB')
   });
 
+  const uploadResultMutation = useMutation(studentResultsAPI.upload, {
+    onSuccess: () => {
+      toast.success('Student result uploaded successfully');
+      setNewResultData({
+        studentId: '',
+        courseCode: '',
+        courseName: '',
+        creditUnits: '',
+        grade: '',
+        gradePoint: '',
+        semester: '',
+        year: '',
+      });
+    },
+    onError: () => toast.error('Failed to upload student result')
+  });
+
+  const createHostelMutation = useMutation(hostelAPI.create, {
+    onSuccess: () => {
+      toast.success('Hostel created successfully');
+      queryClient.invalidateQueries('hostels-list');
+      setShowHostelManagementForm(false);
+      setNewHostelData({
+        name: '',
+        totalRooms: '',
+      });
+    },
+    onError: () => toast.error('Failed to create hostel')
+  });
+
+  const generateReportMutation = useMutation(reportsAPI.generateStudentReport, {
+    onSuccess: async (data) => {
+      toast.success('Report generated successfully');
+      const reportId = data.report._id; // Adjust based on actual backend response
+      if (reportId) {
+        try {
+          const blob = await reportsAPI.download(reportId);
+          const url = window.URL.createObjectURL(new Blob([blob]));
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', `student_report_${reportId}.json`); // Assuming JSON format from backend
+          document.body.appendChild(link);
+          link.click();
+          link.parentNode?.removeChild(link);
+          toast.success('Report downloaded successfully');
+        } catch (downloadError) {
+          toast.error('Failed to download report');
+          console.error('Download error:', downloadError);
+        }
+      }
+    },
+    onError: () => toast.error('Failed to generate report')
+  });
+
   const affairsActivities = [
+    {
+      id: 'hostel-management',
+      title: 'Hostel Management',
+      description: 'Create and manage hostels and their room availability',
+      icon: Home,
+      color: 'bg-purple-500',
+      action: () => setActiveSection('hostel-management')
+    },
     {
       id: 'hostel-allocation',
       title: 'Hostel Allocations',
@@ -118,73 +227,179 @@ const StaffAffairsDashboard: React.FC = () => {
 
   const renderActiveSection = () => {
     switch (activeSection) {
+      case 'hostel-management':
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Hostel Management</h3>
+              <button
+                onClick={() => setShowHostelManagementForm(!showHostelManagementForm)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+              >
+                <PlusCircle className="h-5 w-5 mr-2" />
+                {showHostelManagementForm ? 'Cancel' : 'Create New Hostel'}
+              </button>
+            </div>
+
+            {showHostelManagementForm && (
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h4 className="text-md font-semibold text-gray-800 mb-3">Create New Hostel</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="hostelName" className="block text-sm font-medium text-gray-700">Hostel Name</label>
+                    <input
+                      type="text"
+                      id="hostelName"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      value={newHostelData.name}
+                      onChange={(e) => setNewHostelData({ ...newHostelData, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="totalRooms" className="block text-sm font-medium text-gray-700">Total Rooms</label>
+                    <input
+                      type="number"
+                      id="totalRooms"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      value={newHostelData.totalRooms}
+                      onChange={(e) => setNewHostelData({ ...newHostelData, totalRooms: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => createHostelMutation.mutate(newHostelData as any)}
+                  className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Create Hostel
+                </button>
+              </div>
+            )}
+
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {hostelsList?.hostels?.map((hostel: any) => (
+                <div key={hostel._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                  <div>
+                    <p className="font-medium">
+                      {hostel.name}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Rooms: {hostel.availableRooms} / {hostel.totalRooms}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
       case 'hostel-allocation':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Hostel Allocations</h3>
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {hostels.map((allocation: any) => (
-                <div key={allocation._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                  <div>
-                    <p className="font-medium">
-                      {allocation.student?.userId?.profile?.firstName} {allocation.student?.userId?.profile?.lastName}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {allocation.hostel?.name} - Room {allocation.roomNumber}, Bed {allocation.bedNumber}
-                    </p>
-                  </div>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    allocation.status === 'checked-in' ? 'bg-green-100 text-green-800' :
-                    allocation.status === 'allocated' ? 'bg-blue-100 text-blue-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
-                    {allocation.status}
-                  </span>
-                </div>
-              ))}
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Hostel Allocations</h3>
+        <button
+          onClick={() => setShowHostelAllocationForm(!showHostelAllocationForm)}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+        >
+          <PlusCircle className="h-5 w-5 mr-2" />
+          {showHostelAllocationForm ? 'Cancel' : 'New Allocation'}
+        </button>
+      </div>
+
+      {showHostelAllocationForm && (
+        <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+          <h4 className="text-md font-semibold text-gray-800 mb-3">Create New Hostel Allocation</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="student" className="block text-sm font-medium text-gray-700">Student</label>
+              <select
+                id="student"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={newAllocationData.studentId}
+                onChange={(e) => setNewAllocationData({ ...newAllocationData, studentId: e.target.value })}
+              >
+                <option value="">Select Student</option>
+                {students.map((student: any) => (
+                  <option key={student._id} value={student._id}>
+                    {student.userId?.profile?.firstName} {student.userId?.profile?.lastName} ({student.registrationNumber})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="hostel" className="block text-sm font-medium text-gray-700">Hostel</label>
+              <select
+                id="hostel"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={newAllocationData.hostelId}
+                onChange={(e) => setNewAllocationData({ ...newAllocationData, hostelId: e.target.value })}
+              >
+                <option value="">Select Hostel</option>
+                {hostelsList?.hostels?.map((hostel: any) => (
+                  <option key={hostel._id} value={hostel._id}>
+                    {hostel.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="roomNumber" className="block text-sm font-medium text-gray-700">Room Number</label>
+              <input
+                type="text"
+                id="roomNumber"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                value={newAllocationData.roomNumber}
+                onChange={(e) => setNewAllocationData({ ...newAllocationData, roomNumber: e.target.value })}
+              />
             </div>
           </div>
-        );
+          <button
+            onClick={() => createHostelAllocationMutation.mutate(newAllocationData)}
+            className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Allocate Hostel
+          </button>
+        </div>
+      )}
 
-      case 'hostel-checkin':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Check-in/Check-out Management</h3>
-            <div className="space-y-3 max-h-80 overflow-y-auto">
-              {hostels.filter((h: any) => h.status === 'allocated' || h.status === 'checked-in').map((allocation: any) => (
-                <div key={allocation._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                  <div>
-                    <p className="font-medium">
-                      {allocation.student?.userId?.profile?.firstName} {allocation.student?.userId?.profile?.lastName}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      {allocation.hostel?.name} - Room {allocation.roomNumber}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    {allocation.status === 'allocated' && (
-                      <button
-                        onClick={() => checkInMutation.mutate(allocation._id)}
-                        className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
-                      >
-                        Check In
-                      </button>
-                    )}
-                    {allocation.status === 'checked-in' && (
-                      <button
-                        onClick={() => checkOutMutation.mutate(allocation._id)}
-                        className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
-                      >
-                        Check Out
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+      <div className="space-y-3 max-h-80 overflow-y-auto">
+        {hostels.map((allocation: any) => (
+          <div key={allocation._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+            <div>
+              <p className="font-medium">
+                {allocation.student?.userId?.profile?.firstName || 'N/A'} {allocation.student?.userId?.profile?.lastName || ''}
+              </p>
+              <span className={`text-xs px-2 py-1 rounded ${
+                allocation.status === 'checked-in' ? 'bg-green-100 text-green-800' :
+                allocation.status === 'allocated' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
+              }`}>
+                {allocation.status}
+              </span>
+            </div>
+            <div className="flex space-x-2">
+              {allocation.status === 'allocated' && (
+                <button
+                  onClick={() => checkInMutation.mutate(allocation._id)}
+                  className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm hover:bg-green-200"
+                >
+                  Check In
+                </button>
+              )}
+              {allocation.status === 'checked-in' && (
+                <button
+                  onClick={() => checkOutMutation.mutate(allocation._id)}
+                  className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200"
+                >
+                  Check Out
+                </button>
+              )}
             </div>
           </div>
-        );
-
+        ))}
+      </div>
+    </div>
+  );
       case 'admission-status':
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -218,6 +433,107 @@ const StaffAffairsDashboard: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        );
+
+      case 'upload-results':
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Student Results</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">Student</label>
+                <select
+                  id="studentId"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.studentId}
+                  onChange={(e) => setNewResultData({ ...newResultData, studentId: e.target.value })}
+                >
+                  <option value="">Select Student</option>
+                  {students.map((student: any) => (
+                    <option key={student._id} value={student._id}>
+                      {student.userId?.profile?.firstName} {student.userId?.profile?.lastName} ({student.registrationNumber})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="courseCode" className="block text-sm font-medium text-gray-700">Course Code</label>
+                <input
+                  type="text"
+                  id="courseCode"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.courseCode}
+                  onChange={(e) => setNewResultData({ ...newResultData, courseCode: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="courseName" className="block text-sm font-medium text-gray-700">Course Name</label>
+                <input
+                  type="text"
+                  id="courseName"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.courseName}
+                  onChange={(e) => setNewResultData({ ...newResultData, courseName: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="creditUnits" className="block text-sm font-medium text-gray-700">Credit Units</label>
+                <input
+                  type="number"
+                  id="creditUnits"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.creditUnits}
+                  onChange={(e) => setNewResultData({ ...newResultData, creditUnits: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>
+                <input
+                  type="text"
+                  id="grade"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.grade}
+                  onChange={(e) => setNewResultData({ ...newResultData, grade: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="gradePoint" className="block text-sm font-medium text-gray-700">Grade Point</label>
+                <input
+                  type="number"
+                  id="gradePoint"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.gradePoint}
+                  onChange={(e) => setNewResultData({ ...newResultData, gradePoint: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="semester" className="block text-sm font-medium text-gray-700">Semester</label>
+                <input
+                  type="number"
+                  id="semester"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.semester}
+                  onChange={(e) => setNewResultData({ ...newResultData, semester: e.target.value })}
+                />
+              </div>
+              <div>
+                <label htmlFor="year" className="block text-sm font-medium text-gray-700">Year</label>
+                <input
+                  type="number"
+                  id="year"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={newResultData.year}
+                  onChange={(e) => setNewResultData({ ...newResultData, year: e.target.value })}
+                />
+              </div>
+              <button
+                onClick={() => uploadResultMutation.mutate(newResultData as any)}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Upload Result
+              </button>
             </div>
           </div>
         );

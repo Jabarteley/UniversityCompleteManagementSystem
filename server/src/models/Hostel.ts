@@ -3,7 +3,8 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IHostel extends Document {
   name: string;
-  capacity: number;
+  totalRooms: number;
+  availableRooms: number;
 }
 
 const hostelSchema = new Schema<IHostel>({
@@ -12,7 +13,11 @@ const hostelSchema = new Schema<IHostel>({
     required: true,
     unique: true,
   },
-  capacity: {
+  totalRooms: {
+    type: Number,
+    required: true,
+  },
+  availableRooms: {
     type: Number,
     required: true,
   },

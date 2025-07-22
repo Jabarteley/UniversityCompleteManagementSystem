@@ -18,4 +18,14 @@ export const hostelAllocationAPI = {
     const response = await apiClient.delete(`/hostel-allocations/${id}`);
     return response.data;
   },
+
+  checkIn: async (id: string) => {
+    const response = await apiClient.put(`/hostel-allocations/${id}`, { status: 'checked-in' });
+    return response.data;
+  },
+
+  checkOut: async (id: string) => {
+    const response = await apiClient.put(`/hostel-allocations/${id}`, { status: 'checked-out' });
+    return response.data;
+  },
 };
