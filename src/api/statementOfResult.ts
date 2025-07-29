@@ -1,8 +1,8 @@
 import { apiClient } from './client';
 
 export const statementOfResultAPI = {
-  downloadStatement: async (studentId: string) => {
-    const response = await apiClient.get(`/statement-of-result/download/${studentId}`);
+  downloadStatement: async (userId: string) => {
+    const response = await apiClient.get(`/statement-of-result/download/${userId}`);
     return response.data;
   },
 };

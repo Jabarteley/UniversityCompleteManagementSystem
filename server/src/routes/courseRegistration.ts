@@ -6,11 +6,11 @@ import Course from '../models/Course.js';
 const router = express.Router();
 
 // Get registered courses for a student
-router.get('/registered/:studentId', auth, authorize('student', 'admin', 'staff-registry'), async (req, res) => {
+router.get('/registered/:userId', auth, authorize('student', 'admin', 'staff-registry'), async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const { userId } = req.params;
 
-    const student = await Student.findById(studentId).populate('registeredCourses');
+    const student = await Student.findOne({ userId }).populate('registeredCourses');
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }

@@ -133,7 +133,7 @@ router.post('/', auth, authorize('admin', 'system-admin', 'staff-registry', 'hea
 });
 
 // Update user
-router.put('/:id', auth, authorize('admin', 'system-admin', 'head-department'), async (req, res) => {
+router.put('/:id', auth, authorize('admin', 'system-admin', 'head-department', 'staff-registry'), async (req, res) => {
   try {
     const { id } = req.params;
 

@@ -9,12 +9,12 @@ export const courseRegistrationAPI = {
     const response = await apiClient.get('/courses');
     return response.data;
   },
-  fetchRegisteredCourses: async (studentId: string) => {
-    const response = await apiClient.get(`/course-registration/registered/${studentId}`);
+  fetchRegisteredCourses: async (userId: string) => {
+    const response = await apiClient.get(`/course-registration/registered/${userId}`);
     return response.data;
   },
-  unregisterCourse: async (studentId: string, courseId: string) => {
-    const response = await apiClient.delete(`/course-registration/unregister/${studentId}/${courseId}`);
+  unregisterCourse: async (userId: string, courseId: string) => {
+    const response = await apiClient.delete(`/course-registration/unregister/${userId}/${courseId}`);
     return response.data;
   },
 };

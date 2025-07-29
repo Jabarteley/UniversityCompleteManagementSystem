@@ -6,11 +6,11 @@ import Course from '../models/Course.js';
 const router = express.Router();
 
 // Check wrong course
-router.get('/:studentId', auth, authorize('student', 'admin', 'staff-registry', 'academic-staff', 'head-department'), async (req, res) => {
+router.get('/:userId', auth, authorize('student', 'admin', 'staff-registry', 'academic-staff', 'head-department'), async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const { userId } = req.params;
 
-    const student = await Student.findById(studentId);
+    const student = await Student.findOne({ userId });
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }

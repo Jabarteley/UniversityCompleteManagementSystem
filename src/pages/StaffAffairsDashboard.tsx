@@ -593,6 +593,79 @@ const StaffAffairsDashboard: React.FC = () => {
           </div>
         );
 
+      case 'download-reports':
+        return (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Download Student Reports</h3>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">Student</label>
+                <select
+                  id="studentId"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={selectedStudentForReport}
+                  onChange={(e) => setSelectedStudentForReport(e.target.value)}
+                >
+                  <option value="">Select Student</option>
+                  {students.map((student: any) => (
+                    <option key={student._id} value={student._id}>
+                      {student.userId?.profile?.firstName} {student.userId?.profile?.lastName} ({student.registrationNumber})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="reportType" className="block text-sm font-medium text-gray-700">Report Type</label>
+                <select
+                  id="reportType"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={reportType}
+                  onChange={(e) => setReportType(e.target.value)}
+                >
+                  <option value="">Select Report Type</option>
+                  <option value="student-academic">Student Academic</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Start Date</label>
+                <input
+                  type="date"
+                  id="startDate"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">End Date</label>
+                <input
+                  type="date"
+                  id="endDate"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => {
+                  generateReportMutation.mutate({
+                    title: `Student Report - ${selectedStudentForReport}`,
+                    parameters: {
+                      dateRange: {
+                        startDate,
+                        endDate,
+                      },
+                    },
+                  });
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                Generate Report
+              </button>
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">

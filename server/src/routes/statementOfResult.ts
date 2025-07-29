@@ -5,11 +5,11 @@ import Student from '../models/Student.js';
 const router = express.Router();
 
 // Download statement of result
-router.get('/download/:studentId', auth, authorize('student', 'admin', 'staff-registry'), async (req, res) => {
+router.get('/download/:userId', auth, authorize('student', 'admin', 'staff-registry'), async (req, res) => {
   try {
-    const { studentId } = req.params;
+    const { userId } = req.params;
 
-    const student = await Student.findById(studentId).populate('userId');
+    const student = await Student.findOne({ userId }).populate('userId');
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }

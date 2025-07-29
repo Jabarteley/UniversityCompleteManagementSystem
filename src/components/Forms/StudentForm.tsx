@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQueryClient } from 'react-query';
-import { studentsAPI } from '../../api/students';
+import { studentProfileAPI } from '../../api/studentProfile';
 import { usersAPI } from '../../api/users';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../hooks/useAuth';
 
 interface StudentFormProps {
   onClose: () => void;
@@ -12,26 +12,27 @@ interface StudentFormProps {
 }
 
 const StudentForm: React.FC<StudentFormProps> = ({ onClose, student }) => {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: student ? {
-      firstName: student.userId?.profile?.firstName,
-      lastName: student.userId?.profile?.lastName,
-      email: student.userId?.email,
-      phone: student.userId?.profile?.phone,
-      major: student.academicInfo?.major,
-      department: student.academicInfo?.department,
-      faculty: student.academicInfo?.faculty,
-      level: student.academicInfo?.level,
-      entryYear: student.academicInfo?.entryYear,
-      currentSemester: student.academicInfo?.currentSemester,
-      status: student.academicInfo?.status,
-      program: student.academicInfo?.program,
-      yearOfAdmission: student.academicInfo?.yearOfAdmission,
-      address: student.contactInfo?.address,
-      city: student.contactInfo?.city,
-      state: student.contactInfo?.state,
-      zipCode: student.contactInfo?.zipCode,
+      firstName: student.firstName,
+      lastName: student.lastName,
+      email: user?.email,
+      phone: student.phone,
+      major: student.major,
+      department: student.department,
+      faculty: student.faculty,
+      level: student.level,
+      entryYear: student.entryYear,
+      currentSemester: student.currentSemester,
+      status: student.status,
+      program: student.program,
+      yearOfAdmission: student.yearOfAdmission,
+      address: student.address,
+      city: student.city,
+      state: student.state,
+      zipCode: student.zipCode,
     } : {}
   });
 
@@ -42,21 +43,12 @@ const StudentForm: React.FC<StudentFormProps> = ({ onClose, student }) => {
     }
   });
 
-  const createStudentMutation = useMutation(studentsAPI.create, {
-    onSuccess: () => {
-      toast.success('Student created successfully');
-      queryClient.invalidateQueries('students');
-      onClose();
-    },
-    onError: () => toast.error('Failed to create student')
-  });
-
   const updateMutation = useMutation(
-    (data: any) => studentsAPI.update(student._id, data),
+    (data: any) => studentProfileAPI.updateProfile(user?._id as string, data),
     {
       onSuccess: () => {
         toast.success('Student updated successfully');
-        queryClient.invalidateQueries('students');
+        queryClient.invalidateQueries(['studentProfile', user?._id]);
         onClose();
       },
       onError: () => toast.error('Failed to update student')
@@ -65,54 +57,22 @@ const StudentForm: React.FC<StudentFormProps> = ({ onClose, student }) => {
 
   const onSubmit = async (data: any) => {
     if (student) {
-      const updateData = {
-        academicInfo: {
-          major: data.major,
-          department: data.department,
-          faculty: data.faculty,
-          level: data.level,
-          entryYear: data.entryYear,
-          currentSemester: data.currentSemester,
-          status: data.status,
-          program: data.program,
-          yearOfAdmission: data.yearOfAdmission,
-        },
-        contactInfo: {
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zipCode: data.zipCode,
-        },
-        profile: {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          phone: data.phone,
-        },
-      };
-      updateMutation.mutate(updateData);
+      updateMutation.mutate(data);
     } else {
-      try {
-        const newUser = await createUserMutation.mutateAsync({
-          username: data.email,
-          email: data.email,
-          password: 'password123', // Default password
-          role: 'student',
-          profile: {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            phone: data.phone
-          }
-        });
-
-        await createStudentMutation.mutateAsync({
+      await createStudentMutation.mutateAsync({
           userId: newUser.user.id,
           academicInfo: {
-            major: data.major
+            major: data.major,
+            department: data.department,
+            faculty: data.faculty,
+            level: data.level,
+            entryYear: data.entryYear,
+            currentSemester: data.currentSemester,
+            status: data.status,
+            program: data.program,
+            yearOfAdmission: data.yearOfAdmission,
           }
         });
-      } catch (error) {
-        // Error is already handled by the mutation's onError
-      }
     }
   };
 

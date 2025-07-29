@@ -66,7 +66,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Generate student academic report
-router.post('/student-academic', auth, authorize('admin', 'staff', 'staff-registry'), [
+router.post('/student-academic', auth, authorize('admin', 'staff', 'staff-registry', 'staff-affairs'), [
   body('title').notEmpty().withMessage('Report title is required'),
   body('parameters.dateRange.startDate').isISO8601().withMessage('Valid start date is required'),
   body('parameters.dateRange.endDate').isISO8601().withMessage('Valid end date is required')
