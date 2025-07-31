@@ -90,8 +90,8 @@ const CourseRegistration: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.id) {
-      toast.error('User not authenticated.');
+    if (!user?.studentId) {
+      toast.error('Student profile not found.');
       return;
     }
     if (selectedCourses.length === 0) {
@@ -100,7 +100,7 @@ const CourseRegistration: React.FC = () => {
     }
 
     registerCoursesMutation.mutate({
-      studentId: user.id,
+      studentId: user.studentId,
       courseIds: selectedCourses,
     });
   };

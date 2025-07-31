@@ -61,7 +61,7 @@ export const reportsAPI = {
     const response = await apiClient.get(`/reports/${id}/download`, {
       responseType: 'blob',
     });
-    return response.data;
+    return response;
   },
 
   delete: async (id: string) => {

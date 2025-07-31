@@ -142,7 +142,7 @@ app.use('/api/wrong-course', wrongCourseRoutes);
 app.use('/api/final-clearance', finalClearanceRoutes);
 app.use('/api/statement-of-result', statementOfResultRoutes);
 app.use('/api/request-transcripts', requestTranscriptsRoutes);
-app.use('/api/course-reconciliation', courseReconciliationRoutes);
+app.use('/api/course-reconciliations', courseReconciliationRoutes);
 app.use('/api/add-staff', addStaffRoutes);
 app.use('/api/nominal-roll', nominalRollRoutes);
 app.use('/api/promotions', promotionsRoutes);

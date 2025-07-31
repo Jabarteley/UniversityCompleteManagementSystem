@@ -18,8 +18,8 @@ export const courseAllocationAPI = {
     const response = await apiClient.delete(`/course-allocations/${id}`);
     return response.data;
   },
-  reconcile: async (data: any) => {
-    const response = await apiClient.post('/course-reconciliation', data);
+  reconcile: async (data: { academicYear: string; semester: string }) => {
+    const response = await apiClient.post('/course-reconciliations/reconcile', data);
     return response.data;
   },
 };

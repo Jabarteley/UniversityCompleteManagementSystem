@@ -1,0 +1,16 @@
+{
+  "totalStudents": 1,
+  "averageGPA": 0,
+  "facultyBreakdown": [
+    {
+      "_id": "computing",
+      "count": 1
+    }
+  ],
+  "statusBreakdown": [
+    {
+      "_id": "Active",
+      "count": 1
+    }
+  ]
+}

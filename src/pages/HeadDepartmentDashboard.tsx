@@ -27,7 +27,7 @@ const HeadDepartmentDashboard: React.FC = () => {
     courseCode: '',
     courseName: '',
     creditHours: 3,
-    semester: '1st',
+    semester: 'first',
     academicYear: new Date().getFullYear().toString(),
     department: '',
     faculty: '',
@@ -65,7 +65,7 @@ const HeadDepartmentDashboard: React.FC = () => {
         courseCode: '',
         courseName: '',
         creditHours: 3,
-        semester: '1st',
+        semester: 'first',
         academicYear: new Date().getFullYear().toString(),
         department: '',
         faculty: '',
@@ -284,9 +284,9 @@ const HeadDepartmentDashboard: React.FC = () => {
                     onChange={(e) => setAllocationForm({ ...allocationForm, semester: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   >
-                    <option value="1st">1st Semester</option>
-                    <option value="2nd">2nd Semester</option>
-                    <option value="Summer">Summer</option>
+                    <option value="first">1st Semester</option>
+                    <option value="second">2nd Semester</option>
+                    <option value="summer">Summer</option>
                   </select>
                 </div>
               </div>

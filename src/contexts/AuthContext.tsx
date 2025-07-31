@@ -23,6 +23,7 @@ interface User {
     canPromoteStaff: boolean;
   };
   registrationNumber?: string;
+  studentId?: string;
 }
 
 interface AuthContextType {
