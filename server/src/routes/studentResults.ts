@@ -71,13 +71,11 @@ router.post(
 );
 
 // Get student results by registration number
-router.get('/student/:regNumber', auth, authorize('student', 'academic-staff', 'staff-affairs', 'head-department'), async (req, res) => {
+router.get('/student/id/:studentId', auth, authorize('student', 'academic-staff', 'staff-affairs', 'head-department'), async (req, res) => {
   try {
-    const { regNumber } = req.params;
+    const { studentId } = req.params;
 
-    const student = await Student.findOne({
-      registrationNumber: new RegExp(`^${regNumber.trim()}`, 'i'),
-    });
+    const student = await Student.findById(studentId);
 
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
@@ -199,4 +197,5 @@ router.delete(
   }
 );
 
+// Only one export default at the end
 export default router;

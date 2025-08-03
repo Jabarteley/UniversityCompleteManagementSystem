@@ -78,9 +78,27 @@ const UpdateDeleteResults: React.FC<UpdateDeleteResultsProps> = ({ studentId }) 
     }
   );
 
+  const getGradePoint = (grade: string) => {
+    switch (grade.toUpperCase()) {
+      case 'A': return 5.0;
+      case 'B': return 4.0;
+      case 'C': return 3.0;
+      case 'D': return 2.0;
+      case 'E': return 1.0;
+      case 'F': return 0.0;
+      default: return 0.0;
+    }
+  };
+
   const handleEditClick = (result: CourseResult) => {
     setEditingResult(result);
     setEditForm({ grade: result.grade, gradePoint: result.gradePoint });
+  };
+
+  const handleGradeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newGrade = e.target.value;
+    const newGradePoint = getGradePoint(newGrade);
+    setEditForm({ ...editForm, grade: newGrade, gradePoint: newGradePoint });
   };
 
   const handleUpdateSubmit = (courseResultId: string) => {
@@ -133,7 +151,7 @@ const UpdateDeleteResults: React.FC<UpdateDeleteResultsProps> = ({ studentId }) 
                         <input
                           type="text"
                           value={editForm.grade}
-                          onChange={(e) => setEditForm({ ...editForm, grade: e.target.value })}
+                          onChange={handleGradeChange}
                           className="w-20 px-2 py-1 border rounded"
                         />
                       ) : (

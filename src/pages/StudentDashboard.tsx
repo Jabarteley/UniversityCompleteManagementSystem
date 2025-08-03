@@ -38,7 +38,7 @@ const StudentDashboard: React.FC = () => {
   // Fetch semester results on load
   const { data: resultData, isLoading: isLoadingResults } = useQuery(
     ['studentResults', user?.registrationNumber],
-    () => studentResultsAPI.getByRegistrationNumber(user?.registrationNumber || ''),
+    () => studentResultsAPI.getById(user?.recordRef?._id || ''),
     { enabled: !!user?.registrationNumber }
   );
 

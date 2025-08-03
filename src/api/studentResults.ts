@@ -17,8 +17,8 @@ export const studentResultsAPI = {
     return response.data;
   },
 
-  getByRegistrationNumber: async (regNumber: string) => {
-    const response = await apiClient.get(`/student-results/student/${regNumber}`);
+  getById: async (studentId: string) => {
+    const response = await apiClient.get(`/student-results/student/id/${studentId}`);
     return response.data;
   },
 
