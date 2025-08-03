@@ -17,7 +17,7 @@ import HeadDepartmentDashboard from './pages/HeadDepartmentDashboard';
 import LoadingSpinner from './components/UI/LoadingSpinner';
 import { testConnection } from './api/client';
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,

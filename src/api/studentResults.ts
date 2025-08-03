@@ -23,12 +23,12 @@ export const studentResultsAPI = {
   },
 
   update: async (studentId: string, resultId: string, data: Partial<StudentResult>) => {
-    const response = await apiClient.put(`/student-results/${studentId}/results/${resultId}`, data);
+    const response = await apiClient.put(`/student-results/student/${studentId}/results/${resultId}`, data);
     return response.data;
   },
 
   delete: async (studentId: string, resultId: string) => {
-    const response = await apiClient.delete(`/student-results/${studentId}/results/${resultId}`);
+    const response = await apiClient.delete(`/student-results/student/${studentId}/results/${resultId}`);
     return response.data;
   },
 };

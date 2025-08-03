@@ -33,9 +33,9 @@ const CourseRegistration: React.FC = () => {
   );
 
   const { data: registeredCoursesData, isLoading: isLoadingRegisteredCourses, error: registeredCoursesError } = useQuery<{ registeredCourses: Course[] }>(
-    ['registeredCourses', user?.id],
-    () => courseRegistrationAPI.fetchRegisteredCourses(user?.id || ''),
-    { enabled: !!user?.id }
+    ['registeredCourses', user?.recordRef?._id],
+    () => courseRegistrationAPI.fetchRegisteredCourses(user?.recordRef?._id || ''),
+    { enabled: !!user?.recordRef?._id }
   );
 
   useEffect(() => {
@@ -59,7 +59,7 @@ const CourseRegistration: React.FC = () => {
   );
 
   const unregisterCourseMutation = useMutation(
-    (data: { studentId: string; courseId: string }) => courseRegistrationAPI.unregisterCourse(data.studentId, data.courseId),
+    (data: { userId: string; courseId: string }) => courseRegistrationAPI.unregisterCourse(data.userId, data.courseId),
     {
       onSuccess: () => {
         toast.success('Course unregistered successfully!');
@@ -81,16 +81,16 @@ const CourseRegistration: React.FC = () => {
   };
 
   const handleUnregister = (courseId: string) => {
-    if (!user?.id) {
+    if (!user?.recordRef?._id) {
       toast.error('User not authenticated.');
       return;
     }
-    unregisterCourseMutation.mutate({ studentId: user.id, courseId });
+    unregisterCourseMutation.mutate({ userId: user.recordRef._id, courseId });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user?.studentId) {
+    if (!user?.recordRef?._id) {
       toast.error('Student profile not found.');
       return;
     }
@@ -100,7 +100,7 @@ const CourseRegistration: React.FC = () => {
     }
 
     registerCoursesMutation.mutate({
-      studentId: user.studentId,
+      studentId: user.recordRef._id,
       courseIds: selectedCourses,
     });
   };
@@ -130,9 +130,9 @@ const CourseRegistration: React.FC = () => {
                 key={course._id}
                 className="flex items-center justify-between p-4 border border-green-300 bg-green-50 rounded-lg shadow-sm"
               >
-                <div>
-                  <p className="text-lg font-semibold text-gray-800">{course.code}: {course.title}</p>
-                  <p className="text-sm text-gray-500">{course.creditUnits} Credit Units</p>
+                <div className="flex flex-col min-w-0">
+                  <p className="text-lg font-semibold text-gray-800 whitespace-normal break-words">{course.code}: {course.title}</p>
+                  <p className="text-sm text-gray-500 whitespace-normal break-words">{course.creditUnits} Credit Units</p>
                 </div>
                 <button
                   onClick={() => handleUnregister(course._id)}
@@ -179,9 +179,9 @@ const CourseRegistration: React.FC = () => {
                     onChange={() => handleCourseSelection(course._id)}
                     className="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
                   />
-                  <label htmlFor={`course-${course._id}`} className="ml-3 flex-1 cursor-pointer">
-                    <p className="text-lg font-semibold text-gray-800">{course.code}: {course.title}</p>
-                    <p className="text-sm text-gray-500">{course.creditUnits} Credit Units</p>
+                  <label htmlFor={`course-${course._id}`} className="ml-3 flex-1 cursor-pointer flex flex-col min-w-0">
+                    <p className="text-lg font-semibold text-gray-800 whitespace-normal break-words">{course.code}: {course.title}</p>
+                    <p className="text-sm text-gray-500 whitespace-normal break-words">{course.creditUnits} Credit Units</p>
                   </label>
                 </div>
               ))}

@@ -1,7 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import Student from '../models/Student.js';
-import CourseAllocation from '../models/CourseAllocation.js';
 import { auth, authorize, AuthRequest } from '../middleware/auth.js';
 import { logger } from '../utils/logger.js';
 
@@ -24,6 +23,7 @@ router.post(
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
+        logger.error('Validation errors in upload result:', errors.array());
         return res.status(400).json({ errors: errors.array() });
       }
 
@@ -62,7 +62,6 @@ router.post(
       });
 
       await student.save();
-
       res.json({ success: true, message: 'Result uploaded successfully', student });
     } catch (error) {
       logger.error('Upload result error:', error);
@@ -72,13 +71,12 @@ router.post(
 );
 
 // Get student results by registration number
-router.get('/student/:regNumber', auth, authorize('student'), async (req, res) => {
+router.get('/student/:regNumber', auth, authorize('student', 'academic-staff', 'staff-affairs', 'head-department'), async (req, res) => {
   try {
     const { regNumber } = req.params;
-    console.log('Backend: Received regNumber for student results:', regNumber);
 
     const student = await Student.findOne({
-      registrationNumber: new RegExp(`^${regNumber.trim()}$`, 'i'),
+      registrationNumber: new RegExp(`^${regNumber.trim()}`, 'i'),
     });
 
     if (!student) {
@@ -87,9 +85,118 @@ router.get('/student/:regNumber', auth, authorize('student'), async (req, res) =
 
     res.json({ success: true, student });
   } catch (error) {
-    logger.error('Error fetching student result:', error);
+    logger.error('Get student results error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+// Update a student result (Academic Staff and Staff Affairs)
+router.put(
+  '/student/:studentId/results/:resultId',
+  auth,
+  authorize('academic-staff', 'staff-affairs', 'head-department'),
+  [
+    body('grade').notEmpty().withMessage('Grade is required'),
+    body('gradePoint').isFloat({ min: 0, max: 5 }).withMessage('Grade point must be between 0 and 5'),
+  ],
+  async (req: AuthRequest, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        logger.error('Validation errors in update result:', errors.array());
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      const { studentId, resultId } = req.params;
+      const { grade, gradePoint } = req.body;
+
+      const student = await Student.findById(studentId);
+      if (!student) return res.status(404).json({ message: 'Student not found' });
+
+      let found = false;
+      student.results.forEach(semesterResult => {
+        const courseIndex = semesterResult.courses.findIndex(c => c._id.toString() === resultId);
+        if (courseIndex > -1) {
+          semesterResult.courses[courseIndex].grade = grade;
+          semesterResult.courses[courseIndex].gradePoint = gradePoint;
+          found = true;
+
+          // Recalculate GPA for the semester
+          const totalPoints = semesterResult.courses.reduce((sum, course) => sum + (course.gradePoint * course.creditUnits), 0);
+          const totalUnits = semesterResult.courses.reduce((sum, course) => sum + course.creditUnits, 0);
+          semesterResult.gpa = totalUnits > 0 ? totalPoints / totalUnits : 0;
+        }
+      });
+
+      if (!found) return res.status(404).json({ message: 'Result not found' });
+
+      // Recalculate CGPA for the student
+      const allCourses = student.results.flatMap(r => r.courses);
+      const totalCGPAPoints = allCourses.reduce((sum, course) => sum + (course.gradePoint * course.creditUnits), 0);
+      const totalCGPAUnits = allCourses.reduce((sum, course) => sum + course.creditUnits, 0);
+      const cgpa = totalCGPAUnits > 0 ? totalCGPAPoints / totalCGPAUnits : 0;
+
+      student.results.forEach(result => {
+        result.cgpa = cgpa;
+      });
+
+      await student.save();
+      res.json({ success: true, message: 'Result updated successfully', student });
+    } catch (error) {
+      logger.error('Update result error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// Delete a student result (Academic Staff and Staff Affairs)
+router.delete(
+  '/student/:studentId/results/:resultId',
+  auth,
+  authorize('academic-staff', 'staff-affairs', 'head-department'),
+  async (req: AuthRequest, res) => {
+    try {
+      const { studentId, resultId } = req.params;
+
+      const student = await Student.findById(studentId);
+      if (!student) return res.status(404).json({ message: 'Student not found' });
+
+      let found = false;
+      student.results.forEach(semesterResult => {
+        const initialLength = semesterResult.courses.length;
+        semesterResult.courses = semesterResult.courses.filter(c => c._id.toString() !== resultId);
+        if (semesterResult.courses.length < initialLength) {
+          found = true;
+
+          // Recalculate GPA for the semester
+          const totalPoints = semesterResult.courses.reduce((sum, course) => sum + (course.gradePoint * course.creditUnits), 0);
+          const totalUnits = semesterResult.courses.reduce((sum, course) => sum + course.creditUnits, 0);
+          semesterResult.gpa = totalUnits > 0 ? totalPoints / totalUnits : 0;
+        }
+      });
+
+      if (!found) return res.status(404).json({ message: 'Result not found' });
+
+      // Remove empty semester results
+      student.results = student.results.filter(sr => sr.courses.length > 0);
+
+      // Recalculate CGPA for the student
+      const allCourses = student.results.flatMap(r => r.courses);
+      const totalCGPAPoints = allCourses.reduce((sum, course) => sum + (course.gradePoint * course.creditUnits), 0);
+      const totalCGPAUnits = allCourses.reduce((sum, course) => sum + course.creditUnits, 0);
+      const cgpa = totalCGPAUnits > 0 ? totalCGPAPoints / totalCGPAUnits : 0;
+
+      student.results.forEach(result => {
+        result.cgpa = cgpa;
+      });
+
+      await student.save();
+      res.json({ success: true, message: 'Result deleted successfully', student });
+    } catch (error) {
+      logger.error('Delete result error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
 
 export default router;

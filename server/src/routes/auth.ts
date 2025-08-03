@@ -256,6 +256,7 @@ router.post('/login', [
       permissions: finalPermissions,
       lastLogin: foundUser.lastLogin,
       registrationNumber: foundUser.recordRef?.registrationNumber,
+      recordRef: foundUser.recordRef, // Add this line
       ...(foundUser.recordType === 'Student' && { studentId: foundUser.recordRef?._id })
     };
 
@@ -304,6 +305,7 @@ router.get('/me', auth, async (req: AuthRequest, res) => {
       permissions: finalPermissions,
       lastLogin: user.lastLogin,
       registrationNumber: user.recordRef?.registrationNumber,
+      recordRef: user.recordRef, // Add this line
       ...(user.recordType === 'Student' && { studentId: user.recordRef?._id })
     };
 

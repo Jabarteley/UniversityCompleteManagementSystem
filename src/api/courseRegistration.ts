@@ -1,8 +1,10 @@
 import { apiClient } from './client';
+import { queryClient } from '../App';
 
 export const courseRegistrationAPI = {
   registerCourses: async (data: any) => {
     const response = await apiClient.post('/course-registration/register', data);
+    queryClient.invalidateQueries('course-allocations');
     return response.data;
   },
   fetchAvailableCourses: async () => {
@@ -15,6 +17,7 @@ export const courseRegistrationAPI = {
   },
   unregisterCourse: async (userId: string, courseId: string) => {
     const response = await apiClient.delete(`/course-registration/unregister/${userId}/${courseId}`);
+    queryClient.invalidateQueries('course-allocations');
     return response.data;
   },
 };

@@ -16,10 +16,13 @@ import { courseAllocationAPI } from '../api/courseAllocation';
 import { studentResultsAPI } from '../api/studentResults';
 import { studentsAPI } from '../api/students';
 import toast from 'react-hot-toast';
+import UploadResultsForm from '../components/Forms/UploadResultsForm';
+import UpdateDeleteResults from './UpdateDeleteResults';
 
 const AcademicStaffDashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const [activeSection, setActiveSection] = useState('course-allocation');
+  const [selectedStudentForResults, setSelectedStudentForResults] = useState(null);
   const [resultForm, setResultForm] = useState({
     studentId: '',
     courseCode: '',
@@ -164,120 +167,7 @@ const AcademicStaffDashboard: React.FC = () => {
         );
 
       case 'upload-results':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Student Results</h3>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
-                  <select
-                    value={resultForm.studentId}
-                    onChange={(e) => setResultForm({ ...resultForm, studentId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="">Select Student</option>
-                    {students.map((student: any) => (
-                      <option key={student._id} value={student._id}>
-                        {student.registrationNumber} - {student.userId?.profile?.firstName} {student.userId?.profile?.lastName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
-                  <select
-                    value={resultForm.courseCode}
-                    onChange={(e) => {
-                      const selectedAllocation = allocations.find((a: any) => a.courseCode === e.target.value);
-                      setResultForm({ 
-                        ...resultForm, 
-                        courseCode: e.target.value,
-                        courseName: selectedAllocation?.courseName || '',
-                        creditUnits: selectedAllocation?.creditHours || 3
-                      });
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="">Select Course</option>
-                    {allocations.map((allocation: any) => (
-                      <option key={allocation._id} value={allocation.courseCode}>
-                        {allocation.courseCode} - {allocation.courseName}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
-                  <select
-                    value={resultForm.grade}
-                    onChange={(e) => {
-                      const grade = e.target.value;
-                      setResultForm({ 
-                        ...resultForm, 
-                        grade,
-                        gradePoint: getGradePoint(grade)
-                      });
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value="">Select Grade</option>
-                    <option value="A">A (5.0)</option>
-                    <option value="B">B (4.0)</option>
-                    <option value="C">C (3.0)</option>
-                    <option value="D">D (2.0)</option>
-                    <option value="E">E (1.0)</option>
-                    <option value="F">F (0.0)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Semester</label>
-                  <select
-                    value={resultForm.semester}
-                    onChange={(e) => setResultForm({ ...resultForm, semester: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  >
-                    <option value={1}>1st Semester</option>
-                    <option value={2}>2nd Semester</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
-                  <input
-                    type="number"
-                    value={resultForm.year}
-                    onChange={(e) => setResultForm({ ...resultForm, year: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Grade Point</label>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={resultForm.gradePoint}
-                    readOnly
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={handleUploadResult}
-                disabled={uploadResultMutation.isLoading}
-                className="w-full flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                {uploadResultMutation.isLoading ? 'Uploading...' : 'Upload Result'}
-              </button>
-            </div>
-          </div>
-        );
+        return <UploadResultsForm students={students} />;
 
       case 'update-results':
         return (
@@ -287,7 +177,7 @@ const AcademicStaffDashboard: React.FC = () => {
               <p className="text-gray-600">Select a student to view and modify their results:</p>
               
               <div className="space-y-3">
-                {students.slice(0, 5).map((student: any) => (
+                {students.map((student: any) => (
                   <div key={student._id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                     <div>
                       <p className="font-medium">
@@ -295,19 +185,18 @@ const AcademicStaffDashboard: React.FC = () => {
                       </p>
                       <p className="text-sm text-gray-600">{student.registrationNumber}</p>
                     </div>
-                    <div className="flex space-x-2">
-                      <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200">
-                        <Edit className="h-3 w-3 mr-1 inline" />
-                        Edit
-                      </button>
-                      <button className="px-3 py-1 bg-red-100 text-red-700 rounded text-sm hover:bg-red-200">
-                        <Trash2 className="h-3 w-3 mr-1 inline" />
-                        Delete
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setSelectedStudentForResults(student._id)}
+                      className="px-3 py-1 bg-blue-100 text-blue-700 rounded text-sm hover:bg-blue-200"
+                    >
+                      View Results
+                    </button>
                   </div>
                 ))}
               </div>
+              {selectedStudentForResults && (
+                <UpdateDeleteResults studentId={selectedStudentForResults} />
+              )}
             </div>
           </div>
         );

@@ -14,6 +14,9 @@ import {
   School
 } from 'lucide-react';
 import { studentResultsAPI } from '../api/studentResults';
+import { courseRegistrationAPI } from '../api/courseRegistration';
+import { wrongCourseAPI } from '../api/wrongCourse';
+import { statementOfResultAPI } from '../api/statementOfResult';
 import { feePaymentAPI } from '../api/feePayment';
 import CourseRegistration from './CourseRegistration';
 import WrongCourse from './WrongCourse';
@@ -206,6 +209,7 @@ const StudentDashboard: React.FC = () => {
                               <th className="px-3 py-2 text-left">Credit Units</th>
                               <th className="px-3 py-2 text-left">Grade</th>
                               <th className="px-3 py-2 text-left">Grade Point</th>
+                              
                             </tr>
                           </thead>
                           <tbody>
@@ -220,6 +224,7 @@ const StudentDashboard: React.FC = () => {
                                   </span>
                                 </td>
                                 <td className="px-3 py-2">{course.gradePoint?.toFixed(2)}</td>
+                                
                               </tr>
                             ))}
                           </tbody>

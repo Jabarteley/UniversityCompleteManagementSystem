@@ -21,8 +21,8 @@ const WrongCourse: React.FC = () => {
   const { user } = useAuth();
 
   const { data, isLoading, isError, error } = useQuery<{ wrongCourses: Course[] }>(
-    ['wrongCourses', user?.id],
-    () => wrongCourseAPI.getWrongCourses(user?.id || ''),
+    ['wrongCourses', user?.recordRef?._id],
+    () => wrongCourseAPI.getWrongCourses(user?.recordRef?._id || ''),
     { enabled: !!user?.id }
   );
 

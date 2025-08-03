@@ -46,8 +46,8 @@ const StatementOfResult: React.FC = () => {
   const { user } = useAuth();
 
   const { data, isLoading, isError, error } = useQuery<StatementData>(
-    ['statementOfResult', user?.id],
-    () => statementOfResultAPI.downloadStatement(user?.id || ''),
+    ['statementOfResult', user?.recordRef?._id],
+    () => statementOfResultAPI.downloadStatement(user?.recordRef?._id || ''),
     { enabled: !!user?.id }
   );
 

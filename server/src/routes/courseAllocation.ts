@@ -8,7 +8,7 @@ const router = express.Router();
 // Get all course allocations
 router.get('/', auth, authorize('admin', 'academic-staff', 'head-department'), async (req, res) => {
   try {
-    const allocations = await CourseAllocation.find().populate('assignedLecturer');
+    const allocations = await CourseAllocation.find().populate('assignedLecturer').populate('enrolledStudents');
     res.json({ success: true, allocations });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });

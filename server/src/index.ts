@@ -234,7 +234,7 @@ process.on('SIGTERM', async () => {
 // Start server
 app.listen(PORT, '0.0.0.0', async () => {
   logger.success(`University Records Management System (URMS) v2.0 running on port ${PORT}`);
-  logger.info(`Environment: ${process.env.NODE_ENV}`);
+  logger.info(`Server starting with NODE_ENV: ${process.env.NODE_ENV}`);
   logger.info(`Health check: http://localhost:${PORT}/api/health`);
   logger.info(`MongoDB: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
 });

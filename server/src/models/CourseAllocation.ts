@@ -12,6 +12,7 @@ export interface ICourseAllocation extends Document {
   level: string;
   assignedLecturer: mongoose.Types.ObjectId;
   maxStudents: number;
+  enrolledStudents: mongoose.Types.ObjectId[];
 }
 
 const courseAllocationSchema = new Schema<ICourseAllocation>({
@@ -29,6 +30,10 @@ const courseAllocationSchema = new Schema<ICourseAllocation>({
     required: true,
   },
   maxStudents: { type: Number, required: true },
+  enrolledStudents: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Student',
+  }],
 }, { timestamps: true });
 
 export default mongoose.model<ICourseAllocation>('CourseAllocation', courseAllocationSchema);

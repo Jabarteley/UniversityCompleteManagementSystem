@@ -18,4 +18,12 @@ export const staffAPI = {
     const response = await apiClient.delete(`/staff/${id}`);
     return response.data;
   },
+  promote: async (id: string, data: any) => {
+    const response = await apiClient.put(`/staff/${id}/promote`, data);
+    return response.data;
+  },
+  grantLeave: async (id: string, data: any) => {
+    const response = await apiClient.put(`/staff/${id}/grant-leave`, data);
+    return response.data;
+  },
 };

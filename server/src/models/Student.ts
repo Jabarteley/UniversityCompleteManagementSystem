@@ -80,8 +80,8 @@ const studentSchema = new Schema<IStudent>({
           courseName: String,
           creditUnits: Number,
           grade: String,
-          gradePoint: Number,
-        },
+          gradePoint: Number
+        }
       ],
       gpa: Number,
       cgpa: Number,

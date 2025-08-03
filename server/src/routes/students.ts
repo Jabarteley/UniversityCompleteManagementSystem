@@ -7,9 +7,9 @@ import User from '../models/User.js';
 const router = express.Router();
 
 // Get all students
-router.get('/', auth, authorize('admin', 'staff-registry', 'staff-affairs', 'head-department'), async (req, res) => {
+router.get('/', auth, authorize('admin', 'staff-registry', 'staff-affairs', 'head-department', 'academic-staff'), async (req, res) => {
   try {
-    const students = await Student.find().populate('userId');
+    const students = await Student.find().populate('userId').populate('registeredCourses');
     res.json({ success: true, students });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
@@ -33,7 +33,14 @@ router.post('/', auth, authorize('admin', 'staff-registry'), async (req, res) =>
 
     const registrationNumber = `REG-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
 
-    const newStudent = await Student.create({ userId, registrationNumber, academicInfo: academicInfo || {} });
+    const newStudent = await Student.create({
+      userId,
+      registrationNumber,
+      academicInfo: {
+        level: '100',
+        ...(academicInfo || {}),
+      },
+    });
     res.status(201).json({ success: true, student: newStudent });
   } catch (error) {
     console.error('Error creating student:', error);

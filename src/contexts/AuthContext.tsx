@@ -24,6 +24,9 @@ interface User {
   };
   registrationNumber?: string;
   studentId?: string;
+  recordRef?: {
+    _id: string;
+  };
 }
 
 interface AuthContextType {

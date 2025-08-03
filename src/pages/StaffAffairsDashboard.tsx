@@ -22,6 +22,7 @@ import { studentResultsAPI } from '../api/studentResults';
 import { studentsAPI } from '../api/students';
 import { reportsAPI } from '../api/reports';
 import toast from 'react-hot-toast';
+import UploadResultsForm from '../components/Forms/UploadResultsForm';
 
 const StaffAffairsDashboard: React.FC = () => {
   const { user, logout } = useAuth();
@@ -438,105 +439,7 @@ const StaffAffairsDashboard: React.FC = () => {
         );
 
       case 'upload-results':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Student Results</h3>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="studentId" className="block text-sm font-medium text-gray-700">Student</label>
-                <select
-                  id="studentId"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.studentId}
-                  onChange={(e) => setNewResultData({ ...newResultData, studentId: e.target.value })}
-                >
-                  <option value="">Select Student</option>
-                  {students.map((student: any) => (
-                    <option key={student._id} value={student._id}>
-                      {student.userId?.profile?.firstName} {student.userId?.profile?.lastName} ({student.registrationNumber})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="courseCode" className="block text-sm font-medium text-gray-700">Course Code</label>
-                <input
-                  type="text"
-                  id="courseCode"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.courseCode}
-                  onChange={(e) => setNewResultData({ ...newResultData, courseCode: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="courseName" className="block text-sm font-medium text-gray-700">Course Name</label>
-                <input
-                  type="text"
-                  id="courseName"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.courseName}
-                  onChange={(e) => setNewResultData({ ...newResultData, courseName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="creditUnits" className="block text-sm font-medium text-gray-700">Credit Units</label>
-                <input
-                  type="number"
-                  id="creditUnits"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.creditUnits}
-                  onChange={(e) => setNewResultData({ ...newResultData, creditUnits: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="grade" className="block text-sm font-medium text-gray-700">Grade</label>
-                <input
-                  type="text"
-                  id="grade"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.grade}
-                  onChange={(e) => setNewResultData({ ...newResultData, grade: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="gradePoint" className="block text-sm font-medium text-gray-700">Grade Point</label>
-                <input
-                  type="number"
-                  id="gradePoint"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.gradePoint}
-                  onChange={(e) => setNewResultData({ ...newResultData, gradePoint: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="semester" className="block text-sm font-medium text-gray-700">Semester</label>
-                <input
-                  type="number"
-                  id="semester"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.semester}
-                  onChange={(e) => setNewResultData({ ...newResultData, semester: e.target.value })}
-                />
-              </div>
-              <div>
-                <label htmlFor="year" className="block text-sm font-medium text-gray-700">Year</label>
-                <input
-                  type="number"
-                  id="year"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                  value={newResultData.year}
-                  onChange={(e) => setNewResultData({ ...newResultData, year: e.target.value })}
-                />
-              </div>
-              <button
-                onClick={() => uploadResultMutation.mutate(newResultData as any)}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                Upload Result
-              </button>
-            </div>
-          </div>
-        );
+        return <UploadResultsForm students={students} />;
 
       case 'external-upload':
         return (

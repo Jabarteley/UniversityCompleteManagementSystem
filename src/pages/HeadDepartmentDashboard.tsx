@@ -17,6 +17,7 @@ import { courseAllocationAPI } from '../api/courseAllocation';
 import { studentResultsAPI } from '../api/studentResults';
 import { usersAPI } from '../api/users';
 import { studentsAPI } from '../api/students';
+import { coursesAPI } from '../api/courses';
 import toast from 'react-hot-toast';
 import UploadResultsForm from '../components/Forms/UploadResultsForm';
 
@@ -50,10 +51,12 @@ const HeadDepartmentDashboard: React.FC = () => {
   const { data: allocationsData } = useQuery('course-allocations', () => courseAllocationAPI.getAll({ limit: 50 }));
   const { data: usersData } = useQuery('users', () => usersAPI.getAll({ limit: 100 }));
   const { data: studentsData } = useQuery('students', () => studentsAPI.getAll({ limit: 100 }));
+  const { data: coursesData } = useQuery('courses', coursesAPI.getAll);
 
   const allocations = allocationsData?.allocations || [];
   const users = usersData?.users || [];
   const students = studentsData?.students || [];
+  const courses = coursesData?.courses || [];
   const academicStaff = users.filter((u: any) => u.role === 'academic-staff');
 
   // Mutations
@@ -178,7 +181,7 @@ const HeadDepartmentDashboard: React.FC = () => {
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'upload-results':
-        return <UploadResultsForm />;
+        return <UploadResultsForm students={students} courses={courses} />;
 
       case 'course-allocation':
         return (

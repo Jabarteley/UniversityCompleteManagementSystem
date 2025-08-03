@@ -82,6 +82,7 @@ router.put('/:id/grant-leave', auth, authorize('admin', 'staff-registry'), async
 
     res.json({ success: true, message: 'Leave granted successfully', staff: staffMember });
   } catch (error) {
+    console.error('Grant leave error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });

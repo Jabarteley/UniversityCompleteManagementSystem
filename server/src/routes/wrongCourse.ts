@@ -2,6 +2,7 @@ import express from 'express';
 import { auth, authorize } from '../middleware/auth.js';
 import Student from '../models/Student.js';
 import Course from '../models/Course.js';
+import { logger } from '../utils/logger.js';
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get('/:userId', auth, authorize('student', 'admin', 'staff-registry', 'ac
   try {
     const { userId } = req.params;
 
-    const student = await Student.findOne({ userId });
+    const student = await Student.findById(userId);
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
