@@ -60,7 +60,7 @@ router.post('/', auth, authorize('admin', 'system-admin', 'staff-registry', 'hea
   body('username').optional().trim(),
   body('email').isEmail().withMessage('Please enter a valid email'),
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('role').isIn(['student', 'staff-registry', 'staff-affairs', 'academic-staff', 'head-of-department', 'admin', 'system-admin']).withMessage('Valid role is required')
+  body('role').isIn(['student', 'staff-registry', 'staff-affairs', 'academic-staff', 'head-department', 'admin', 'system-admin']).withMessage('Valid role is required')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -78,7 +78,7 @@ router.post('/', auth, authorize('admin', 'system-admin', 'staff-registry', 'hea
     const { department, ...userData } = req.body;
     const user = await User.create(userData);
 
-    if (user.role === 'academic-staff') {
+    if (['admin', 'staff-registry', 'staff-affairs', 'academic-staff', 'head-department'].includes(user.role)) {
       const newStaff = new Staff({
         userId: user._id,
         employmentInfo: {

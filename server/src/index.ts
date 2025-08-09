@@ -220,13 +220,7 @@ app.use('*', (req, res) => {
 process.on('SIGTERM', async () => {
   logger.info('SIGTERM received, shutting down gracefully');
 
-  try {
-    const documentProcessor = DocumentProcessingService.getInstance();
-    await documentProcessor.cleanup();
-    logger.info('Document processing service cleaned up');
-  } catch (error) {
-    logger.error('Error cleaning up services:', error);
-  }
+  
 
   process.exit(0);
 });

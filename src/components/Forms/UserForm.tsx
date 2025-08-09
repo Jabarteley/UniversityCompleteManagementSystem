@@ -151,9 +151,7 @@ const UserForm: React.FC<UserFormProps> = ({ onClose, user, isAddingStudent }) =
         const newUser = await createMutation.mutateAsync(userData);
 
         if (newUser.user) {
-          if (data.role.includes('staff')) {
-            await createStaffMutation.mutateAsync({ userId: newUser.user.id });
-          } 
+           
           // Student record is now handled by the backend's user creation route
           // No need to call createStudentMutation here
         }
@@ -229,7 +227,7 @@ const UserForm: React.FC<UserFormProps> = ({ onClose, user, isAddingStudent }) =
               <option value="staff-registry">Staff (Administrative Registry)</option>
               <option value="staff-affairs">Staff (Student Affairs)</option>
               <option value="academic-staff">Academic Staff (Lecturer)</option>
-              <option value="head-department">Head Department</option>
+              <option value="head-department">Head of Department</option>
               <option value="student">Student</option>
             </select>
             {errors.role && (
